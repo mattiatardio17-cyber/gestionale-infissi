@@ -12,17 +12,12 @@ GUADAGNO_PERC = 0.3
 GUADAGNO_MINIMO = 300
 TASSE_PERC = 0.3
 
-# Prezzo alluminio
-PREZZO_ALLUMINIO_KG = 10  # £ / kg
+PREZZO_ALLUMINIO_KG = 10  # £/kg
 
 # Alluminio: peso per m²
 materiali_alluminio = {
-    "Alluminio Freddo": {
-        "kg": 8
-    },
-    "Alluminio Termico": {
-        "kg": 12
-    }
+    "Alluminio Freddo": {"kg": 8},
+    "Alluminio Termico": {"kg": 12}
 }
 
 # Vetro
@@ -40,7 +35,6 @@ materiali_lineari_mq = {
     "guarnizione_anta": 6
 }
 
-# Prezzi €/m
 prezzi_materiali_lineari = {
     "guarnizione_vetro": 1.5,
     "guarnizione_telaio": 1.2,
@@ -67,16 +61,11 @@ larghezza = st.number_input("Larghezza (m)", min_value=0.1, step=0.1)
 altezza = st.number_input("Altezza (m)", min_value=0.1, step=0.1)
 quantita = st.number_input("Quantità", min_value=1, step=1)
 
-# ---------- MATERIALI ----------
+# ---------- MATERIALE ----------
 st.markdown("## Materiale")
 cols = st.columns(2)
 
-materiali = [
-    "Alluminio Freddo",
-    "Alluminio Termico"
-]
-
-for col, nome in zip(cols, materiali):
+for col, nome in zip(cols, materiali_alluminio.keys()):
     with col:
         st.image(Image.open("img/alluminio.png"), width=120)
         if st.button(nome):
@@ -87,8 +76,15 @@ for col, nome in zip(cols, materiali):
 # ---------- VETRO ----------
 st.markdown("## Vetro")
 cols = st.columns(3)
-for col, nome in zip(cols, vetri_tipologie.keys()):
+vetri = [
+    ("Singolo", "img/vetro_singolo.png"),
+    ("Doppio", "img/vetro_doppio.png"),
+    ("Triplo", "img/vetro_triplo.png")
+]
+
+for col, (nome, img) in zip(cols, vetri):
     with col:
+        st.image(Image.open(img), width=100)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -97,8 +93,14 @@ for col, nome in zip(cols, vetri_tipologie.keys()):
 # ---------- ACCESSORI ----------
 st.markdown("## Accessorio")
 cols = st.columns(2)
-for col, nome in zip(cols, ["Cremonese", "Maniglia"]):
+accessori = [
+    ("Cremonese", "img/cremonese.png"),
+    ("Maniglia", "img/maniglie.png")
+]
+
+for col, (nome, img) in zip(cols, accessori):
     with col:
+        st.image(Image.open(img), width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
@@ -115,7 +117,7 @@ st.session_state.anta_ribalta = st.checkbox(
 if st.button("Calcola Preventivo"):
     superficie = larghezza * altezza
 
-    # Alluminio (peso)
+    # Alluminio
     kg_mq = materiali_alluminio[st.session_state.materiale]["kg"]
     costo_alluminio = kg_mq * PREZZO_ALLUMINIO_KG * superficie * quantita
 
@@ -152,31 +154,25 @@ if st.button("Calcola Preventivo"):
     st.session_state.preventivo = f"""=== PREVENTIVO INFISSI ===
 Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
 
-DIMENSIONI
-- {larghezza} x {altezza} m
-- Quantità: {quantita}
-- Superficie totale: {superficie:.2f} m²
+SUPERFICIE: {superficie:.2f} m²
+QUANTITÀ: {quantita}
 
 MATERIALE
-- Tipo: {st.session_state.materiale}
-- Peso: {kg_mq} kg/m²
-- Prezzo: {PREZZO_ALLUMINIO_KG} £/kg
+- {st.session_state.materiale}
+- {kg_mq} kg/m²
 - Costo alluminio: {costo_alluminio:.2f} £
 
-ALTRI COSTI
-- Materiali lineari + guarnizioni: {costo_lineari:.2f} £
+COSTI
+- Materiali lineari: {costo_lineari:.2f} £
 - Vetro: {costo_vetro:.2f} £
 - Accessori: {costo_accessori:.2f} £
 - Costi azienda: {costo_luce:.2f} £
 
-GUADAGNO
-- {guadagno:.2f} £
-
-TASSE
-- {tasse:.2f} £
+GUADAGNO: {guadagno:.2f} £
+TASSE: {tasse:.2f} £
 
 ========================
-TOTALE FINALE: {totale_finale:.2f} £
+TOTALE: {totale_finale:.2f} £
 ========================
 """
 
