@@ -11,7 +11,6 @@ st.set_page_config(page_title="Gestionale Infissi", layout="wide")
 # ======================================================
 COSTI_AZIENDA = 10
 ACCESSORI_SECONDARI = 45
-
 GUADAGNO_PERC = 0.30
 GUADAGNO_MINIMO = 300
 TASSE_PERC = 0.30
@@ -52,9 +51,15 @@ quantita = st.number_input("Quantità", min_value=1, step=1)
 # ---------- MATERIALI ----------
 st.markdown("## Materiale")
 cols = st.columns(2)
-for col, nome in zip(cols, kg_lineare_alluminio.keys()):
+materiali = ["Alluminio Freddo", "Alluminio Termico"]
+immagini_materiali = {"Alluminio Freddo":"img/alluminio.png", "Alluminio Termico":"img/alluminio.png"}
+
+for col, nome in zip(cols, materiali):
     with col:
-        st.image(Image.open("img/alluminio.png"), width=120)
+        try:
+            st.image(Image.open(immagini_materiali[nome]), width=120)
+        except:
+            st.write(nome)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -63,8 +68,15 @@ for col, nome in zip(cols, kg_lineare_alluminio.keys()):
 # ---------- VETRO ----------
 st.markdown("## Vetro")
 cols = st.columns(3)
-for col, nome in zip(cols, vetri_tipologie.keys()):
+vetri = ["Singolo","Doppio","Triplo"]
+immagini_vetri = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.png","Triplo":"img/vetro_triplo.png"}
+
+for col, nome in zip(cols, vetri):
     with col:
+        try:
+            st.image(Image.open(immagini_vetri[nome]), width=100)
+        except:
+            st.write(nome)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -73,8 +85,15 @@ for col, nome in zip(cols, vetri_tipologie.keys()):
 # ---------- ACCESSORI ----------
 st.markdown("## Accessori")
 cols = st.columns(2)
-for col, nome in zip(cols, ["Cremonese","Maniglia"]):
+accessori = ["Cremonese","Maniglia"]
+immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.png"}
+
+for col, nome in zip(cols, accessori):
     with col:
+        try:
+            st.image(Image.open(immagini_accessori[nome]), width=80)
+        except:
+            st.write(nome)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
