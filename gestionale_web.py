@@ -86,6 +86,7 @@ for col,(nome,img) in zip(cols,accessori):
 if st.button("Calcola Preventivo"):
     superficie = larghezza * altezza
 
+    # Costi principali
     costo_materiale = materiali_prezzi[st.session_state.materiale] * quantita
     costo_vetro = superficie * vetri_tipologie[st.session_state.vetro] * 50 * quantita
     costo_accessori = ACCESSORI_SECONDARI * quantita
@@ -105,12 +106,14 @@ if st.button("Calcola Preventivo"):
     tasse = totale_con_guadagno * TASSE_PERC
     totale_finale = totale_con_guadagno + tasse
 
-    # ---------- LEGENDA CALCOLI ----------
-    unitario_metro = 6
-    costo_unitario_materiale = 10  # € ogni 6 m (esempio)
-    totale_metri = larghezza + altezza
-    unita = totale_metri / unitario_metro
-    costo_legenda_materiale = unita * costo_unitario_materiale
+    # ---------- LEGENDA PIU PRECISA ----------
+    # Calcolo costo proporzionale per metro quadrato e quantità
+    # Materiale
+    costo_materiale_per_mq = materiali_prezzi[st.session_state.materiale] / (larghezza*altezza) if superficie>0 else 0
+    # Vetro
+    costo_vetro_per_mq = costo_vetro / superficie if superficie>0 else 0
+    # Accessori
+    costo_accessori_per_pezzo = costo_accessori / quantita if quantita>0 else 0
 
     # ---------- PREVENTIVO ----------
     st.session_state.preventivo = f"""=== PREVENTIVO INFISSI ===
@@ -120,6 +123,7 @@ DIMENSIONI
 - Larghezza: {larghezza} m
 - Altezza: {altezza} m
 - Quantità: {quantita}
+- Superficie totale: {superficie:.2f} m²
 
 SCELTE
 - Materiale: {st.session_state.materiale}
@@ -127,9 +131,9 @@ SCELTE
 - Accessorio: {st.session_state.accessorio}
 
 DETTAGLIO COSTI
-- Materiale: {costo_materiale:.2f} €
-- Vetro: {costo_vetro:.2f} €
-- Accessori: {costo_accessori:.2f} €
+- Materiale: {costo_materiale:.2f} € ({costo_materiale_per_mq:.2f} €/m²)
+- Vetro: {costo_vetro:.2f} € ({costo_vetro_per_mq:.2f} €/m²)
+- Accessori: {costo_accessori:.2f} € ({costo_accessori_per_pezzo:.2f} €/pz)
 - Costi azienda: {costo_luce:.2f} €
 - Inversione + Montaggio: {INVERSIONE_BATTUTA + MONTAGGIO:.2f} €
 
@@ -139,11 +143,6 @@ GUADAGNO
 TASSE
 - {int(TASSE_PERC*100)}%: {tasse:.2f} €
 
-LEGENDA CALCOLI
-- Ogni {unitario_metro} m di larghezza+altezza = {costo_unitario_materiale:.2f} € materiale
-- Totale metri considerati: {totale_metri:.2f} m
-- Costo stimato legenda materiale: {costo_legenda_materiale:.2f} €
-
 ========================
 TOTALE FINALE: {totale_finale:.2f} €
 ========================
@@ -151,7 +150,7 @@ TOTALE FINALE: {totale_finale:.2f} €
 
 # ---------- OUTPUT ----------
 if "preventivo" in st.session_state:
-    st.text_area("Preventivo", st.session_state.preventivo, height=350)
+    st.text_area("Preventivo", st.session_state.preventivo, height=400)
 
     st.download_button(
         "⬇ Scarica Preventivo",
