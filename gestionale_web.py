@@ -4,8 +4,8 @@ from tkinter import messagebox
 from datetime import datetime
 
 # ---------- COSTANTI ----------
-COSTI_AZIENDA_GIORNALIERI = 10   # costi azienda
-ACCESSORI = 45                    # accessori secondari
+LUCE = 10          # costi azienda giornalieri per pezzo
+ACCESSORI = 45     # accessori secondari
 GUADAGNO_PERC = 0.3
 TASSE_PERC = 0.3
 INVERSIONE_BATTUTA = 50
@@ -16,7 +16,7 @@ vetri_tipologie = {"Singolo":1, "Doppio":2, "Triplo":3}
 # ---------- VAR GLOBALI ----------
 scelta_materiale = "PVC"
 scelta_vetro = "Singolo"
-scelta_accessorio = "Cremonese"  # Cremonese o Maniglia
+scelta_accessorio = "Cremonese"
 materiale_btns = {}
 vetro_btns = {}
 accessorio_btns = {}
@@ -27,6 +27,7 @@ img_objects = {}  # mantiene PhotoImage
 def scegli_materiale(m):
     global scelta_materiale
     scelta_materiale = m
+    print(f"[DEBUG] Materiale selezionato: {m}")  # log debug
     for nome, btn in materiale_btns.items():
         if nome == m:
             btn.config(relief="sunken", bd=4, highlightbackground="blue")
@@ -36,6 +37,7 @@ def scegli_materiale(m):
 def scegli_vetro(v):
     global scelta_vetro
     scelta_vetro = v
+    print(f"[DEBUG] Vetro selezionato: {v}")  # log debug
     for nome, btn in vetro_btns.items():
         if nome == v:
             btn.config(relief="sunken", bd=4, highlightbackground="blue")
@@ -45,6 +47,7 @@ def scegli_vetro(v):
 def scegli_accessorio(a):
     global scelta_accessorio
     scelta_accessorio = a
+    print(f"[DEBUG] Accessorio selezionato: {a}")  # log debug
     for nome, btn in accessorio_btns.items():
         if nome == a:
             btn.config(relief="sunken", bd=4, highlightbackground="blue")
@@ -77,21 +80,16 @@ def calcola():
     costo_materiale = materiali_prezzi[scelta_materiale]
     costo_vetro = superficie * vetri_tipologie[scelta_vetro] * 50
     costo_accessori = ACCESSORI * quantita
-    costo_luce = COSTI_AZIENDA_GIORNALIERI * quantita
+    costo_luce = LUCE * quantita
     totale_senza_tasse = (costo_materiale + costo_vetro + costo_accessori + costo_luce + INVERSIONE_BATTUTA + MONTAGGIO)
     guadagno = totale_senza_tasse * GUADAGNO_PERC
     totale_con_guadagno = totale_senza_tasse + guadagno
     tasse = totale_con_guadagno * TASSE_PERC
     totale_finale = totale_con_guadagno + tasse
 
-    # Calcolo automatico per rimanere almeno +300€
-    min_guadagno = 300
-    if totale_finale < totale_senza_tasse + min_guadagno:
-        totale_finale = totale_senza_tasse + min_guadagno
-
     pezzi = aggiorna_pezzi(quantita)
 
-    # Aggiorna preventivo
+    # ---------- Preventivo ----------
     text_preventivo.delete("1.0", tk.END)
     text_preventivo.insert(tk.END,f"=== PREVENTIVO ===\nTotale finale: {totale_finale:.2f} €\n\n")
     text_preventivo.insert(tk.END,"=== DETTAGLIO COSTI ===\n")
@@ -106,6 +104,7 @@ def calcola():
     text_preventivo.insert(tk.END,f"- Materiale: {scelta_materiale}\n- Vetro: {scelta_vetro}\n- Accessorio: {scelta_accessorio}\n")
     for nome,q in pezzi.items():
         text_preventivo.insert(tk.END,f"- {nome}: {q} pz\n")
+    text_preventivo.insert(tk.END,"\nGrazie per aver usato il gestionale!")  # nuova riga extra
 
 def salva():
     contenuto = text_preventivo.get("1.0", tk.END)
@@ -118,9 +117,9 @@ def salva():
 
 # ---------- GUI ----------
 root = tk.Tk()
-root.title("Gestionale Infissi - Web/GUI Completo")
+root.title("Gestionale Infissi - Versione Web Aggiornata")
 
-# Input dimensioni e quantità
+# Input base
 tk.Label(root,text="Larghezza (m):").grid(row=0,column=0)
 entry_larghezza = tk.Entry(root); entry_larghezza.grid(row=0,column=1)
 tk.Label(root,text="Altezza (m):").grid(row=1,column=0)
@@ -128,7 +127,7 @@ entry_altezza = tk.Entry(root); entry_altezza.grid(row=1,column=1)
 tk.Label(root,text="Quantità:").grid(row=2,column=0)
 entry_quantita = tk.Entry(root); entry_quantita.grid(row=2,column=1)
 
-# Materiali
+# ---------- Materiali ----------
 materiali_files = {"PVC":"img/pvc.png","Alluminio":"img/alluminio.png","Legno":"img/legno.png"}
 for i,(m,p) in enumerate(materiali_files.items()):
     img = Image.open(p).resize((100,100))
@@ -140,7 +139,7 @@ for i,(m,p) in enumerate(materiali_files.items()):
     materiale_btns[m]=btn
 scegli_materiale(scelta_materiale)
 
-# Vetri
+# ---------- Vetri ----------
 vetri_files = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.png","Triplo":"img/vetro_triplo.png"}
 for i,(v,p) in enumerate(vetri_files.items()):
     img = Image.open(p).resize((80,80))
@@ -152,7 +151,7 @@ for i,(v,p) in enumerate(vetri_files.items()):
     vetro_btns[v]=btn
 scegli_vetro(scelta_vetro)
 
-# Accessori
+# ---------- Accessori ----------
 accessori_files = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglie.png"}
 for i,(a,p) in enumerate(accessori_files.items()):
     img = Image.open(p).resize((60,60))
@@ -164,7 +163,7 @@ for i,(a,p) in enumerate(accessori_files.items()):
     accessorio_btns[a]=btn
 scegli_accessorio(scelta_accessorio)
 
-# Pezzi (Cerniere, Squadrette, Viti)
+# ---------- Pezzi ----------
 pezzi_files = {
     "Cerniere":("img/cerniere.png",50),
     "Squadrette":("img/squadrette.png",40),
@@ -179,7 +178,7 @@ for i,(nome,(p,s)) in enumerate(pezzi_files.items()):
     q_lbl.grid(row=7,column=i)
     pezzi_labels[nome]=(lbl,q_lbl)
 
-# Preventivo e pulsanti
+# ---------- Preventivo e pulsanti ----------
 text_preventivo = tk.Text(root,width=60,height=15); text_preventivo.grid(row=8,column=0,columnspan=5,pady=5)
 tk.Button(root,text="Calcola Preventivo",command=calcola).grid(row=9,column=0,columnspan=5,pady=5)
 tk.Button(root,text="Salva Preventivo",command=salva).grid(row=10,column=0,columnspan=5,pady=2)
