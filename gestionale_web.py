@@ -2,6 +2,7 @@ import streamlit as st
 from datetime import datetime
 from PIL import Image
 
+# ---------- CONFIG ----------
 st.set_page_config(page_title="Gestionale Infissi", layout="wide")
 
 # ---------- COSTANTI ----------
@@ -16,7 +17,7 @@ MONTAGGIO = 120
 materiali_prezzi = {"PVC":200, "Alluminio":350, "Legno":450}
 vetri_tipologie = {"Singolo":1, "Doppio":2, "Triplo":3}
 
-# ---------- STATO INIZIALE ----------
+# ---------- STATO ----------
 for k, v in {
     "materiale":"PVC",
     "vetro":"Singolo",
@@ -24,58 +25,59 @@ for k, v in {
 }.items():
     st.session_state.setdefault(k, v)
 
-# ---------- INPUT ----------
+# ---------- UI ----------
 st.title("Gestionale Infissi")
 
 larghezza = st.number_input("Larghezza (m)", min_value=0.1, step=0.1)
 altezza = st.number_input("Altezza (m)", min_value=0.1, step=0.1)
 quantita = st.number_input("Quantità", min_value=1, step=1)
 
-# ---------- FUNZIONE CARTE ----------
-def card(label, img_path, key):
-    col = st.container()
-    selected = st.session_state[key] == label
-    border = "5px solid #0066ff" if selected else "1px solid #aaa"
-    # usa bottone invisibile sopra immagine
-    st.markdown(f"""
-        <div style="
-            display:inline-block;
-            text-align:center;
-            margin:5px;
-            border:{border};
-            border-radius:10px;
-            padding:5px;
-            width:120px;
-        ">
-        <img src="{img_path}" width="100"><br>
-        <form action="">
-        <button name="{label}" style="background:none;border:none;margin-top:5px;">{label}</button>
-        </form>
-        </div>
-        """, unsafe_allow_html=True)
-    if st.button(label, key=key+"btn"):
-        st.session_state[key] = label
-
-# ---------- CARTE MATERIALI ----------
 st.markdown("## Materiale")
 cols = st.columns(3)
-for col,(nome,img) in zip(cols, [("PVC","img/pvc.png"), ("Alluminio","img/alluminio.png"), ("Legno","img/legno.png")]):
-    with col:
-        card(nome, img, "materiale")
+materiali = [
+    ("PVC","img/pvc.png"),
+    ("Alluminio","img/alluminio.png"),
+    ("Legno","img/legno.png")
+]
 
-# ---------- CARTE VETRI ----------
+for col,(nome,img) in zip(cols,materiali):
+    with col:
+        st.image(Image.open(img), width=120)
+        if st.button(nome):
+            st.session_state.materiale = nome
+        if st.session_state.materiale == nome:
+            st.markdown("🟦 **SELEZIONATO**")
+
 st.markdown("## Vetro")
 cols = st.columns(3)
-for col,(nome,img) in zip(cols, [("Singolo","img/vetro_singolo.png"), ("Doppio","img/vetro_doppio.png"), ("Triplo","img/vetro_triplo.png")]):
-    with col:
-        card(nome, img, "vetro")
+vetri = [
+    ("Singolo","img/vetro_singolo.png"),
+    ("Doppio","img/vetro_doppio.png"),
+    ("Triplo","img/vetro_triplo.png")
+]
 
-# ---------- CARTE ACCESSORI ----------
+for col,(nome,img) in zip(cols,vetri):
+    with col:
+        st.image(Image.open(img), width=100)
+        if st.button(nome):
+            st.session_state.vetro = nome
+        if st.session_state.vetro == nome:
+            st.markdown("🟦 **SELEZIONATO**")
+
 st.markdown("## Accessorio")
 cols = st.columns(2)
-for col,(nome,img) in zip(cols, [("Cremonese","img/cremonese.png"), ("Maniglia","img/maniglie.png")]):
+accessori = [
+    ("Cremonese","img/cremonese.png"),
+    ("Maniglia","img/maniglie.png")
+]
+
+for col,(nome,img) in zip(cols,accessori):
     with col:
-        card(nome, img, "accessorio")
+        st.image(Image.open(img), width=80)
+        if st.button(nome):
+            st.session_state.accessorio = nome
+        if st.session_state.accessorio == nome:
+            st.markdown("🟦 **SELEZIONATO**")
 
 # ---------- CALCOLO ----------
 if st.button("Calcola Preventivo"):
@@ -134,6 +136,7 @@ TOTALE FINALE: {totale_finale:.2f} €
 # ---------- OUTPUT ----------
 if "preventivo" in st.session_state:
     st.text_area("Preventivo", st.session_state.preventivo, height=350)
+
     st.download_button(
         "⬇ Scarica Preventivo",
         st.session_state.preventivo,
