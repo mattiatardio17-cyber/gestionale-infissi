@@ -32,6 +32,7 @@ larghezza = st.number_input("Larghezza (m)", min_value=0.1, step=0.1)
 altezza = st.number_input("Altezza (m)", min_value=0.1, step=0.1)
 quantita = st.number_input("Quantità", min_value=1, step=1)
 
+# Materiale
 st.markdown("## Materiale")
 cols = st.columns(3)
 materiali = [
@@ -48,6 +49,7 @@ for col,(nome,img) in zip(cols,materiali):
         if st.session_state.materiale == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
+# Vetro
 st.markdown("## Vetro")
 cols = st.columns(3)
 vetri = [
@@ -64,6 +66,7 @@ for col,(nome,img) in zip(cols,vetri):
         if st.session_state.vetro == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
+# Accessorio
 st.markdown("## Accessorio")
 cols = st.columns(2)
 accessori = [
@@ -102,6 +105,14 @@ if st.button("Calcola Preventivo"):
     tasse = totale_con_guadagno * TASSE_PERC
     totale_finale = totale_con_guadagno + tasse
 
+    # ---------- LEGENDA CALCOLI ----------
+    unitario_metro = 6
+    costo_unitario_materiale = 10  # € ogni 6 m (esempio)
+    totale_metri = larghezza + altezza
+    unita = totale_metri / unitario_metro
+    costo_legenda_materiale = unita * costo_unitario_materiale
+
+    # ---------- PREVENTIVO ----------
     st.session_state.preventivo = f"""=== PREVENTIVO INFISSI ===
 Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
 
@@ -127,6 +138,11 @@ GUADAGNO
 
 TASSE
 - {int(TASSE_PERC*100)}%: {tasse:.2f} €
+
+LEGENDA CALCOLI
+- Ogni {unitario_metro} m di larghezza+altezza = {costo_unitario_materiale:.2f} € materiale
+- Totale metri considerati: {totale_metri:.2f} m
+- Costo stimato legenda materiale: {costo_legenda_materiale:.2f} €
 
 ========================
 TOTALE FINALE: {totale_finale:.2f} €
