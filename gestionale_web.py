@@ -56,10 +56,7 @@ immagini_materiali = {"Alluminio Freddo":"img/alluminio.png", "Alluminio Termico
 
 for col, nome in zip(cols, materiali):
     with col:
-        try:
-            st.image(Image.open(immagini_materiali[nome]), width=120)
-        except:
-            st.write(nome)
+        st.image(Image.open(immagini_materiali[nome]), width=120)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -73,10 +70,7 @@ immagini_vetri = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.p
 
 for col, nome in zip(cols, vetri):
     with col:
-        try:
-            st.image(Image.open(immagini_vetri[nome]), width=100)
-        except:
-            st.write(nome)
+        st.image(Image.open(immagini_vetri[nome]), width=100)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -90,10 +84,7 @@ immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.p
 
 for col, nome in zip(cols, accessori):
     with col:
-        try:
-            st.image(Image.open(immagini_accessori[nome]), width=80)
-        except:
-            st.write(nome)
+        st.image(Image.open(immagini_accessori[nome]), width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
