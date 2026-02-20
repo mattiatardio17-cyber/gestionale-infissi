@@ -1,6 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
+import os
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Gestionale Infissi", layout="wide")
@@ -39,6 +40,15 @@ for k,v in {"materiale":"Alluminio Freddo","vetro":"Singolo","accessorio":"Cremo
     st.session_state.setdefault(k,v)
 
 # ======================================================
+# ================= FUNZIONE SICURA IMMAGINI ===========
+# ======================================================
+def mostra_immagine(file_path, width=100):
+    if os.path.exists(file_path):
+        st.image(file_path, width=width)
+    else:
+        st.warning(f"Immagine non trovata: {file_path}")
+
+# ======================================================
 # ================= UI ================================
 # ======================================================
 st.title("Gestionale Infissi")
@@ -55,7 +65,7 @@ immagini_materiali = {"Alluminio Freddo":"img/alluminio.png", "Alluminio Termico
 
 for col, nome in zip(cols, materiali):
     with col:
-        st.image(immagini_materiali[nome], width=120)
+        mostra_immagine(immagini_materiali[nome], width=120)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -69,7 +79,7 @@ immagini_vetri = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.p
 
 for col, nome in zip(cols, vetri):
     with col:
-        st.image(immagini_vetri[nome], width=100)
+        mostra_immagine(immagini_vetri[nome], width=100)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -83,7 +93,7 @@ immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.p
 
 for col, nome in zip(cols, accessori):
     with col:
-        st.image(immagini_accessori[nome], width=80)
+        mostra_immagine(immagini_accessori[nome], width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
