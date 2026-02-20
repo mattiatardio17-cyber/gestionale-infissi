@@ -12,7 +12,7 @@ GUADAGNO_PERC = 0.3
 GUADAGNO_MINIMO = 300
 TASSE_PERC = 0.3
 
-PREZZO_ALLUMINIO_KG = 10  # £/kg
+PREZZO_ALLUMINIO_KG = 10  # £ / kg
 
 # Alluminio: peso per m²
 materiali_alluminio = {
@@ -65,9 +65,14 @@ quantita = st.number_input("Quantità", min_value=1, step=1)
 st.markdown("## Materiale")
 cols = st.columns(2)
 
-for col, nome in zip(cols, materiali_alluminio.keys()):
+materiali = [
+    ("Alluminio Freddo", "img/alluminio.png"),
+    ("Alluminio Termico", "img/alluminio.png")
+]
+
+for col, (nome, img) in zip(cols, materiali):
     with col:
-        st.image(Image.open("img/alluminio.png"), width=120)
+        st.image(Image.open(img), width=120)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -76,6 +81,7 @@ for col, nome in zip(cols, materiali_alluminio.keys()):
 # ---------- VETRO ----------
 st.markdown("## Vetro")
 cols = st.columns(3)
+
 vetri = [
     ("Singolo", "img/vetro_singolo.png"),
     ("Doppio", "img/vetro_doppio.png"),
@@ -93,6 +99,7 @@ for col, (nome, img) in zip(cols, vetri):
 # ---------- ACCESSORI ----------
 st.markdown("## Accessorio")
 cols = st.columns(2)
+
 accessori = [
     ("Cremonese", "img/cremonese.png"),
     ("Maniglia", "img/maniglie.png")
@@ -163,7 +170,7 @@ MATERIALE
 - Costo alluminio: {costo_alluminio:.2f} £
 
 COSTI
-- Materiali lineari: {costo_lineari:.2f} £
+- Materiali lineari + guarnizioni: {costo_lineari:.2f} £
 - Vetro: {costo_vetro:.2f} £
 - Accessori: {costo_accessori:.2f} £
 - Costi azienda: {costo_luce:.2f} £
