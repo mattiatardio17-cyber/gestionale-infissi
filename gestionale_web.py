@@ -93,7 +93,14 @@ immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.p
 
 for col, nome in zip(cols, accessori):
     with col:
-        mostra_immagine(immagini_accessori[nome], width=80)
+        # controlla path esistente, fallback lowercase per Linux/Cloud
+        file_path = immagini_accessori[nome]
+        if not os.path.exists(file_path):
+            file_path_lower = file_path.lower()
+            if os.path.exists(file_path_lower):
+                file_path = file_path_lower
+
+        mostra_immagine(file_path, width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
