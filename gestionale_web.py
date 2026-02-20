@@ -1,7 +1,6 @@
 import streamlit as st
 from datetime import datetime
 import pandas as pd
-from PIL import Image
 
 # ---------- CONFIG ----------
 st.set_page_config(page_title="Gestionale Infissi", layout="wide")
@@ -56,7 +55,7 @@ immagini_materiali = {"Alluminio Freddo":"img/alluminio.png", "Alluminio Termico
 
 for col, nome in zip(cols, materiali):
     with col:
-        st.image(Image.open(immagini_materiali[nome]), width=120)
+        st.image(immagini_materiali[nome], width=120)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -70,7 +69,7 @@ immagini_vetri = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.p
 
 for col, nome in zip(cols, vetri):
     with col:
-        st.image(Image.open(immagini_vetri[nome]), width=100)
+        st.image(immagini_vetri[nome], width=100)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -84,7 +83,7 @@ immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.p
 
 for col, nome in zip(cols, accessori):
     with col:
-        st.image(Image.open(immagini_accessori[nome]), width=80)
+        st.image(immagini_accessori[nome], width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
