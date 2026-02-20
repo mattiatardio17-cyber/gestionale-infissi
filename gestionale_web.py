@@ -1,97 +1,90 @@
 import streamlit as st
-import pandas as pd
 
-st.set_page_config(page_title="Gestionale Infissi", layout="centered")
+# ---------- COSTANTI ----------
+COSTI_AZIENDA = 10
+ACCESSORI = 45
+INVERSIONE_BATTUTA = 50
+MONTAGGIO = 120
 
-st.title("🏗️ Gestionale Preventivi Infissi")
-
-# -------------------------
-# COSTANTI
-# -------------------------
-ACCESSORI_SECONDARI = 45
-COSTI_AZIENDA_GIORNALIERI = 10
-TASSE = 0.30
-GUADAGNO = 0.30
+GUADAGNO_PERC = 0.30
+TASSE_PERC = 0.30
 OBIETTIVO_NETTO = 300
 
-# -------------------------
-# CONFIGURAZIONE INFISSO
-# -------------------------
-st.header("🔧 Configurazione infisso")
+materiali_prezzi = {
+    "PVC": 200,
+    "Alluminio": 350,
+    "Legno": 450
+}
 
-tipo = st.radio(
-    "Seleziona tipologia:",
-    ["Cremonese", "Maniglia"]
-)
+vetri_moltiplicatori = {
+    "Singolo": 1,
+    "Doppio": 2,
+    "Triplo": 3
+}
 
-if tipo == "Cremonese":
-    st.success("✔ Cremonese selezionata")
-    prezzo_base = 120
-else:
-    st.success("✔ Maniglia selezionata")
-    prezzo_base = 90
+# ---------- FUNZIONE CALCOLO ----------
+def calcola_preventivo(larghezza, altezza, quantita, materiale, vetro):
+    superficie = larghezza * altezza
 
-quantita = st.number_input(
-    "Quantità pezzi",
-    min_value=1,
-    step=1
-)
+    costo_materiale = materiali_prezzi[materiale] * quantita
+    costo_vetro = superficie * vetri_moltiplicatori[vetro] * 50 * quantita
+    costo_accessori = ACCESSORI * quantita
+    costo_azienda = COSTI_AZIENDA * quantita
 
-# -------------------------
-# CALCOLI
-# -------------------------
-st.header("💰 Calcolo economico")
+    costi_base = (
+        costo_materiale +
+        costo_vetro +
+        costo_accessori +
+        costo_azienda +
+        INVERSIONE_BATTUTA +
+        MONTAGGIO
+    )
 
-costo_base = prezzo_base * quantita
+    guadagno = costi_base * GUADAGNO_PERC
+    tasse = (costi_base + guadagno) * TASSE_PERC
 
-costi_fissi = ACCESSORI_SECONDARI + COSTI_AZIENDA_GIORNALIERI
+    totale = costi_base + guadagno + tasse
 
-costo_totale = costo_base + costi_fissi
+    # 🔒 GARANTISCE 300€ NETTI
+    netto = totale - costi_base - tasse
+    if netto < OBIETTIVO_NETTO:
+        differenza = OBIETTIVO_NETTO - netto
+        totale += differenza
+        guadagno += differenza
 
-# Per rimanere +300€ netti dopo tasse e guadagno
-fattore = (1 - TASSE - GUADAGNO)
-prezzo_vendita = (costo_totale + OBIETTIVO_NETTO) / fattore
+    return {
+        "costi_base": costi_base,
+        "guadagno": guadagno,
+        "tasse": tasse,
+        "totale": totale
+    }
 
-tasse = prezzo_vendita * TASSE
-guadagno = prezzo_vendita * GUADAGNO
-netto_finale = prezzo_vendita - costo_totale - tasse - guadagno
+# ---------- INTERFACCIA ----------
+st.set_page_config(page_title="Gestionale Infissi", layout="centered")
+st.title("🪟 Gestionale Infissi – Preventivo Web")
 
-# -------------------------
-# RISULTATI
-# -------------------------
-st.subheader("📊 Riepilogo economico")
+st.markdown("### 📐 Misure")
+larghezza = st.number_input("Larghezza (m)", min_value=0.1, step=0.1)
+altezza = st.number_input("Altezza (m)", min_value=0.1, step=0.1)
+quantita = st.number_input("Quantità", min_value=1, step=1)
 
-st.write(f"**Costo base:** € {costo_base:.2f}")
-st.write(f"**Costi fissi:** € {costi_fissi:.2f}")
-st.write(f"**Prezzo di vendita:** € {prezzo_vendita:.2f}")
-st.write(f"**Tasse (30%):** € {tasse:.2f}")
-st.write(f"**Guadagno (30%):** € {guadagno:.2f}")
+st.markdown("### 🧱 Materiale")
+materiale = st.radio("", list(materiali_prezzi.keys()), horizontal=True)
 
-if netto_finale >= OBIETTIVO_NETTO:
-    st.success(f"✅ Netto finale: € {netto_finale:.2f}")
-else:
-    st.error(f"❌ Netto finale: € {netto_finale:.2f}")
+st.markdown("### 🪟 Vetro")
+vetro = st.radio("", list(vetri_moltiplicatori.keys()), horizontal=True)
 
-# -------------------------
-# PREVENTIVO DETTAGLIATO
-# -------------------------
-st.header("📋 Preventivo dettagliato")
+# ---------- CALCOLO ----------
+if st.button("💰 Calcola Preventivo"):
+    risultato = calcola_preventivo(
+        larghezza, altezza, quantita, materiale, vetro
+    )
 
-righe = [
-    [tipo, quantita, prezzo_base, costo_base],
-    ["Accessori secondari", 1, ACCESSORI_SECONDARI, ACCESSORI_SECONDARI],
-    ["Costi azienda giornalieri", 1, COSTI_AZIENDA_GIORNALIERI, COSTI_AZIENDA_GIORNALIERI],
-    ["Tasse (30%)", "-", "-", tasse],
-    ["Guadagno (30%)", "-", "-", guadagno],
-]
+    st.success(f"💶 **TOTALE FINALE: {risultato['totale']:.2f} €**")
 
-df = pd.DataFrame(
-    righe,
-    columns=["Voce", "Quantità", "Prezzo unitario (€)", "Totale (€)"]
-)
+    st.markdown("### 📋 Dettaglio costi")
+    st.write(f"- Costi base: **{risultato['costi_base']:.2f} €**")
+    st.write(f"- Guadagno (30%): **{risultato['guadagno']:.2f} €**")
+    st.write(f"- Tasse (30%): **{risultato['tasse']:.2f} €**")
 
-st.table(df)
-
-st.markdown("---")
-st.markdown(f"### 💶 **TOTALE PREVENTIVO: € {prezzo_vendita:.2f}**")
-st.markdown(f"### 🟢 **Utile netto garantito: € {netto_finale:.2f}**")
+    st.info("✅ Guadagno minimo garantito: **300 € netti**")
