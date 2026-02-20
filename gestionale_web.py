@@ -1,5 +1,9 @@
 import streamlit as st
 from datetime import datetime
+from PIL import Image
+
+# ---------- CONFIG ----------
+st.set_page_config(page_title="Gestionale Infissi", layout="wide")
 
 # ---------- COSTANTI ----------
 COSTI_AZIENDA = 10
@@ -13,26 +17,74 @@ MONTAGGIO = 120
 materiali_prezzi = {"PVC":200, "Alluminio":350, "Legno":450}
 vetri_tipologie = {"Singolo":1, "Doppio":2, "Triplo":3}
 
-st.set_page_config(page_title="Gestionale Infissi")
+# ---------- STATO ----------
+for k, v in {
+    "materiale":"PVC",
+    "vetro":"Singolo",
+    "accessorio":"Cremonese"
+}.items():
+    st.session_state.setdefault(k, v)
 
+# ---------- UI ----------
 st.title("Gestionale Infissi")
 
-# ---------- INPUT ----------
 larghezza = st.number_input("Larghezza (m)", min_value=0.1, step=0.1)
 altezza = st.number_input("Altezza (m)", min_value=0.1, step=0.1)
 quantita = st.number_input("Quantità", min_value=1, step=1)
 
-# ---------- SELEZIONI ----------
-materiale = st.radio("Materiale", list(materiali_prezzi.keys()), horizontal=True)
-vetro = st.radio("Vetro", list(vetri_tipologie.keys()), horizontal=True)
-accessorio = st.radio("Accessorio", ["Cremonese", "Maniglia"], horizontal=True)
+st.markdown("## Materiale")
+cols = st.columns(3)
+materiali = [
+    ("PVC","img/pvc.png"),
+    ("Alluminio","img/alluminio.png"),
+    ("Legno","img/legno.png")
+]
+
+for col,(nome,img) in zip(cols,materiali):
+    with col:
+        st.image(Image.open(img), width=120)
+        if st.button(nome):
+            st.session_state.materiale = nome
+        if st.session_state.materiale == nome:
+            st.markdown("🟦 **SELEZIONATO**")
+
+st.markdown("## Vetro")
+cols = st.columns(3)
+vetri = [
+    ("Singolo","img/vetro_singolo.png"),
+    ("Doppio","img/vetro_doppio.png"),
+    ("Triplo","img/vetro_triplo.png")
+]
+
+for col,(nome,img) in zip(cols,vetri):
+    with col:
+        st.image(Image.open(img), width=100)
+        if st.button(nome):
+            st.session_state.vetro = nome
+        if st.session_state.vetro == nome:
+            st.markdown("🟦 **SELEZIONATO**")
+
+st.markdown("## Accessorio")
+cols = st.columns(2)
+accessori = [
+    ("Cremonese","img/cremonese.png"),
+    ("Maniglia","img/maniglie.png")
+]
+
+for col,(nome,img) in zip(cols,accessori):
+    with col:
+        st.image(Image.open(img), width=80)
+        if st.button(nome):
+            st.session_state.accessorio = nome
+        if st.session_state.accessorio == nome:
+            st.markdown("🟦 **SELEZIONATO**")
 
 # ---------- CALCOLO ----------
 if st.button("Calcola Preventivo"):
     superficie = larghezza * altezza
 
-    costo_materiale = materiali_prezzi[materiale] * quantita
-    costo_vetro = superficie * vetri_tipologie[vetro] * 50 * quantita
+    costo_materiale = materiali_prezzi[st.session_state.materiale] * quantita
+    costo_vetro = superficie * vetri_tipologie[st.session_state.vetro] * 50 * quantita
     costo_accessori = ACCESSORI_SECONDARI * quantita
     costo_luce = COSTI_AZIENDA * quantita
 
@@ -46,31 +98,47 @@ if st.button("Calcola Preventivo"):
     )
 
     guadagno = max(totale_senza_tasse * GUADAGNO_PERC, GUADAGNO_MINIMO)
-
     totale_con_guadagno = totale_senza_tasse + guadagno
     tasse = totale_con_guadagno * TASSE_PERC
     totale_finale = totale_con_guadagno + tasse
 
-    preventivo = f"""=== PREVENTIVO INFISSI ===
-Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
+    st.session_state.preventivo = f"""=== PREVENTIVO INFISSI ===
+Data: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}
 
-Materiale: {materiale}
-Vetro: {vetro}
-Accessorio: {accessorio}
+DIMENSIONI
+- Larghezza: {larghezza} m
+- Altezza: {altezza} m
+- Quantità: {quantita}
 
-Totale finale: {totale_finale:.2f} €
-Guadagno: {guadagno:.2f} €
-Tasse: {tasse:.2f} €
+SCELTE
+- Materiale: {st.session_state.materiale}
+- Vetro: {st.session_state.vetro}
+- Accessorio: {st.session_state.accessorio}
+
+DETTAGLIO COSTI
+- Materiale: {costo_materiale:.2f} €
+- Vetro: {costo_vetro:.2f} €
+- Accessori: {costo_accessori:.2f} €
+- Costi azienda: {costo_luce:.2f} €
+- Inversione + Montaggio: {INVERSIONE_BATTUTA + MONTAGGIO:.2f} €
+
+GUADAGNO
+- Applicato: {guadagno:.2f} € (min. garantito {GUADAGNO_MINIMO} €)
+
+TASSE
+- {int(TASSE_PERC*100)}%: {tasse:.2f} €
+
+========================
+TOTALE FINALE: {totale_finale:.2f} €
+========================
 """
-
-    st.session_state["preventivo"] = preventivo
 
 # ---------- OUTPUT ----------
 if "preventivo" in st.session_state:
-    st.text_area("Preventivo", st.session_state["preventivo"], height=250)
+    st.text_area("Preventivo", st.session_state.preventivo, height=350)
 
     st.download_button(
         "⬇ Scarica Preventivo",
-        st.session_state["preventivo"],
+        st.session_state.preventivo,
         file_name="preventivo.txt"
     )
