@@ -42,10 +42,12 @@ for k,v in {"materiale":"Alluminio Freddo","vetro":"Singolo","accessorio":"Cremo
 # ======================================================
 # ================= FUNZIONE SICURA IMMAGINI ===========
 # ======================================================
-def mostra_immagine(file_path, width=100):
-    if os.path.exists(file_path):
-        st.image(file_path, width=width)
-    else:
+def mostra_immagine_bytes(file_path, width=100):
+    """Mostra immagine leggendo i bytes direttamente, evita problemi di path"""
+    try:
+        with open(file_path, "rb") as f:
+            st.image(f.read(), width=width)
+    except Exception:
         st.warning(f"Immagine non trovata: {file_path}")
 
 # ======================================================
@@ -65,7 +67,7 @@ immagini_materiali = {"Alluminio Freddo":"img/alluminio.png", "Alluminio Termico
 
 for col, nome in zip(cols, materiali):
     with col:
-        mostra_immagine(immagini_materiali[nome], width=120)
+        mostra_immagine_bytes(immagini_materiali[nome], width=120)
         if st.button(nome):
             st.session_state.materiale = nome
         if st.session_state.materiale == nome:
@@ -79,7 +81,7 @@ immagini_vetri = {"Singolo":"img/vetro_singolo.png","Doppio":"img/vetro_doppio.p
 
 for col, nome in zip(cols, vetri):
     with col:
-        mostra_immagine(immagini_vetri[nome], width=100)
+        mostra_immagine_bytes(immagini_vetri[nome], width=100)
         if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
@@ -93,14 +95,7 @@ immagini_accessori = {"Cremonese":"img/cremonese.png","Maniglia":"img/maniglia.p
 
 for col, nome in zip(cols, accessori):
     with col:
-        # controlla path esistente, fallback lowercase per Linux/Cloud
-        file_path = immagini_accessori[nome]
-        if not os.path.exists(file_path):
-            file_path_lower = file_path.lower()
-            if os.path.exists(file_path_lower):
-                file_path = file_path_lower
-
-        mostra_immagine(file_path, width=80)
+        mostra_immagine_bytes(immagini_accessori[nome], width=80)
         if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
