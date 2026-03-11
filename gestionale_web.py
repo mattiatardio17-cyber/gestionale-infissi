@@ -51,8 +51,8 @@ cols = st.columns(len(materiali))
 for col, nome in zip(cols, materiali):
     with col:
         mostra_img(immagini_materiali[nome], 120)
-        if st.button(nome, key=f"mat_{nome}"):
-            st.session_state.materiale = nome  # Aggiorna solo la scelta corrente
+        if st.button(nome):
+            st.session_state.materiale = nome  # Aggiorna la selezione
         if st.session_state.materiale == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
@@ -65,7 +65,7 @@ cols = st.columns(len(vetri))
 for col, nome in zip(cols, vetri):
     with col:
         mostra_img(immagini_vetri[nome], 100)
-        if st.button(nome, key=f"vet_{nome}"):
+        if st.button(nome):
             st.session_state.vetro = nome
         if st.session_state.vetro == nome:
             st.markdown("🟦 **SELEZIONATO**")
@@ -79,7 +79,7 @@ cols = st.columns(len(accessori))
 for col, nome in zip(cols, accessori):
     with col:
         mostra_img(immagini_accessori[nome], 80)
-        if st.button(nome, key=f"acc_{nome}"):
+        if st.button(nome):
             st.session_state.accessorio = nome
         if st.session_state.accessorio == nome:
             st.markdown("🟦 **SELEZIONATO**")
