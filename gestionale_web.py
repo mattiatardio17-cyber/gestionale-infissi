@@ -42,24 +42,13 @@ ACCESSORI_COSTANTE_MQ = 50
 ANTA_RIBALTA_OPZIONALE_MQ = 80
 
 # ======================================================
-# ================= STATO =============================
-# ======================================================
-for k,v in {
-    "materiale":"Alluminio Freddo",
-    "vetro":"Singolo",
-    "accessorio":"Cremonese",
-    "anta_ribalta":False
-}.items():
-    st.session_state.setdefault(k,v)
-
-# ======================================================
 # ================= FUNZIONE IMMAGINI ==================
 # ======================================================
 def mostra_immagine_bytes(file_path, width=100):
     try:
         with open(file_path, "rb") as f:
             st.image(f.read(), width=width)
-    except Exception:
+    except:
         st.warning(f"Immagine non trovata: {file_path}")
 
 # ======================================================
@@ -76,23 +65,25 @@ quantita = st.number_input("Quantità", min_value=1, step=1)
 # ======================================================
 st.markdown("## Materiale")
 
-cols = st.columns(2)
-
 materiali = ["Alluminio Freddo", "Alluminio Termico"]
 
-immagini_materiali = {
-    "Alluminio Freddo":"img/alluminio.png",
-    "Alluminio Termico":"img/alluminio.png"
-}
+cols = st.columns(len(materiali))
 
 for col, nome in zip(cols, materiali):
     with col:
-        mostra_immagine_bytes(immagini_materiali[nome], width=120)
+        mostra_immagine_bytes("img/alluminio.png",120)
 
-        if st.button(nome, key=f"materiale_{nome}"):
-            st.session_state.materiale = nome
+materiale = st.radio(
+    "Seleziona materiale",
+    materiali,
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-        if st.session_state.materiale == nome:
+cols = st.columns(len(materiali))
+for col,nome in zip(cols,materiali):
+    with col:
+        if materiale == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
 # ======================================================
@@ -100,9 +91,9 @@ for col, nome in zip(cols, materiali):
 # ======================================================
 st.markdown("## Vetro")
 
-cols = st.columns(3)
-
 vetri = ["Singolo","Doppio","Triplo"]
+
+cols = st.columns(len(vetri))
 
 immagini_vetri = {
     "Singolo":"img/vetro_singolo.png",
@@ -110,15 +101,21 @@ immagini_vetri = {
     "Triplo":"img/vetro_triplo.png"
 }
 
-for col, nome in zip(cols, vetri):
+for col,nome in zip(cols,vetri):
     with col:
+        mostra_immagine_bytes(immagini_vetri[nome],100)
 
-        mostra_immagine_bytes(immagini_vetri[nome], width=100)
+vetro = st.radio(
+    "Seleziona vetro",
+    vetri,
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-        if st.button(nome, key=f"vetro_{nome}"):
-            st.session_state.vetro = nome
-
-        if st.session_state.vetro == nome:
+cols = st.columns(len(vetri))
+for col,nome in zip(cols,vetri):
+    with col:
+        if vetro == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
 # ======================================================
@@ -126,24 +123,30 @@ for col, nome in zip(cols, vetri):
 # ======================================================
 st.markdown("## Accessori")
 
-cols = st.columns(2)
-
 accessori = ["Cremonese","Maniglia"]
+
+cols = st.columns(len(accessori))
 
 immagini_accessori = {
     "Cremonese":"img/cremonese.png",
     "Maniglia":"img/maniglia.png"
 }
 
-for col, nome in zip(cols, accessori):
+for col,nome in zip(cols,accessori):
     with col:
+        mostra_immagine_bytes(immagini_accessori[nome],80)
 
-        mostra_immagine_bytes(immagini_accessori[nome], width=80)
+accessorio = st.radio(
+    "Seleziona accessorio",
+    accessori,
+    horizontal=True,
+    label_visibility="collapsed"
+)
 
-        if st.button(nome, key=f"accessorio_{nome}"):
-            st.session_state.accessorio = nome
-
-        if st.session_state.accessorio == nome:
+cols = st.columns(len(accessori))
+for col,nome in zip(cols,accessori):
+    with col:
+        if accessorio == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
 # ======================================================
@@ -151,10 +154,7 @@ for col, nome in zip(cols, accessori):
 # ======================================================
 st.markdown("## Opzioni")
 
-st.session_state.anta_ribalta = st.checkbox(
-    "Anta ribalta (+80 £ / m lineare)",
-    value=st.session_state.anta_ribalta
-)
+anta_ribalta = st.checkbox("Anta ribalta (+80 £ / m lineare)")
 
 # ======================================================
 # ================= CALCOLO ============================
@@ -166,7 +166,7 @@ if st.button("Calcola Preventivo"):
     lunghezza_lineare_telaio = (2*larghezza + 2*altezza)
     lunghezza_lineare_anta = (2*larghezza + 2*altezza)
 
-    kg_mlineare = kg_lineare_alluminio[st.session_state.materiale]
+    kg_mlineare = kg_lineare_alluminio[materiale]
 
     peso_totale_alluminio = kg_mlineare * (lunghezza_lineare_telaio + lunghezza_lineare_anta) * quantita
     costo_alluminio = peso_totale_alluminio * PREZZO_ALLUMINIO_KG
@@ -174,22 +174,18 @@ if st.button("Calcola Preventivo"):
     costo_anta = PREZZO_ANTA_MLINEARE * lunghezza_lineare_anta * quantita
     costo_telaio = PREZZO_TELAIO_MLINEARE * lunghezza_lineare_telaio * quantita
 
-    costo_guarnizioni_mq = sum(
-        materiali_lineari_mq[k]*PREZZI_GUARNIZIONI[k]
-        for k in materiali_lineari_mq
-    )
-
+    costo_guarnizioni_mq = sum(materiali_lineari_mq[k]*PREZZI_GUARNIZIONI[k] for k in materiali_lineari_mq)
     costo_guarnizioni = costo_guarnizioni_mq * superficie * quantita
 
     costo_accessori_mq = ACCESSORI_COSTANTE_MQ
 
-    if st.session_state.anta_ribalta:
+    if anta_ribalta:
         costo_accessori_mq += ANTA_RIBALTA_OPZIONALE_MQ
 
     costo_accessori_mq_tot = costo_accessori_mq * superficie * quantita
     costo_accessori = ACCESSORI_SECONDARI * quantita
 
-    costo_vetro_mq = vetri_tipologie[st.session_state.vetro] * PREZZO_VETRO_BASE_MQ
+    costo_vetro_mq = vetri_tipologie[vetro] * PREZZO_VETRO_BASE_MQ
     costo_vetro = costo_vetro_mq * superficie * quantita
 
     costo_luce = COSTI_AZIENDA * quantita
@@ -205,35 +201,28 @@ if st.button("Calcola Preventivo"):
         costo_luce
     )
 
-    guadagno = max(
-        totale_senza_tasse * GUADAGNO_PERC,
-        GUADAGNO_MINIMO
-    )
+    guadagno = max(totale_senza_tasse*GUADAGNO_PERC,GUADAGNO_MINIMO)
 
     totale_con_guadagno = totale_senza_tasse + guadagno
-    tasse = totale_con_guadagno * TASSE_PERC
+    tasse = totale_con_guadagno*TASSE_PERC
     totale_finale = totale_con_guadagno + tasse
 
-    # ======== TABELLA ========
-
     dati = [
-        ["Alluminio", f"{kg_mlineare:.2f} kg/m", f"{lunghezza_lineare_telaio+lunghezza_lineare_anta:.2f} m", f"{peso_totale_alluminio:.2f} kg", f"{costo_alluminio:.2f} £"],
-        ["Anta", f"{PREZZO_ANTA_MLINEARE} £/m", f"{lunghezza_lineare_anta:.2f} m", "-", f"{costo_anta:.2f} £"],
-        ["Telaio", f"{PREZZO_TELAIO_MLINEARE} £/m", f"{lunghezza_lineare_telaio:.2f} m", "-", f"{costo_telaio:.2f} £"],
-        ["Guarnizioni", "-", "-", "-", f"{costo_guarnizioni:.2f} £"],
-        ["Vetro", f"{costo_vetro_mq} £/m²", f"{superficie:.2f} m²", "-", f"{costo_vetro:.2f} £"],
-        ["Accessori m²", "-", f"{superficie:.2f} m²", "-", f"{costo_accessori_mq_tot:.2f} £"],
-        ["Accessori secondari", "-", "-", "-", f"{costo_accessori:.2f} £"],
-        ["Costi azienda", "-", "-", "-", f"{costo_luce:.2f} £"],
-        ["Guadagno", "-", "-", "-", f"{guadagno:.2f} £"],
-        ["Tasse", "-", "-", "-", f"{tasse:.2f} £"],
-        ["TOTALE FINALE", "-", "-", "-", f"{totale_finale:.2f} £"]
+        ["Alluminio","-", "-", "-",f"{costo_alluminio:.2f} £"],
+        ["Anta","-", "-", "-",f"{costo_anta:.2f} £"],
+        ["Telaio","-", "-", "-",f"{costo_telaio:.2f} £"],
+        ["Guarnizioni","-", "-", "-",f"{costo_guarnizioni:.2f} £"],
+        ["Vetro","-", "-", "-",f"{costo_vetro:.2f} £"],
+        ["Accessori","-", "-", "-",f"{costo_accessori_mq_tot:.2f} £"],
+        ["Costi azienda","-", "-", "-",f"{costo_luce:.2f} £"],
+        ["Guadagno","-", "-", "-",f"{guadagno:.2f} £"],
+        ["Tasse","-", "-", "-",f"{tasse:.2f} £"],
+        ["TOTALE","-", "-", "-",f"{totale_finale:.2f} £"]
     ]
 
-    df = pd.DataFrame(dati, columns=["Voce","Unità","Quantità","Peso","Costo"])
+    df = pd.DataFrame(dati,columns=["Voce","Unità","Quantità","Peso","Costo"])
 
     st.markdown("## Preventivo dettagliato")
-
     st.dataframe(df)
 
     csv = df.to_csv(index=False)
