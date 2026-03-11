@@ -23,17 +23,20 @@ ACCESSORI_COSTANTE_MQ = 50
 ANTA_RIBALTA_OPZIONALE_MQ = 80
 
 # ================= STATO =================
-st.session_state.setdefault("materiale", "Alluminio Freddo")
-st.session_state.setdefault("vetro", "Singolo")
-st.session_state.setdefault("accessorio", "Cremonese")
-st.session_state.setdefault("anta_ribalta", False)
+for key, default in {
+    "materiale": "Alluminio Freddo",
+    "vetro": "Singolo",
+    "accessorio": "Cremonese",
+    "anta_ribalta": False
+}.items():
+    st.session_state.setdefault(key, default)
 
 # ================= FUNZIONE IMMAGINI =================
-def mostra_img(path, w=100):
+def mostra_img(path, width=100):
     try:
-        st.image(path, width=w)
+        st.image(path, width=width)
     except:
-        st.warning("Immagine mancante")
+        st.warning(f"Immagine mancante: {path}")
 
 # ================= UI =================
 st.title("Gestionale Infissi")
@@ -45,23 +48,28 @@ quantita = st.number_input("Quantità", min_value=1, step=1)
 # ================= MATERIALI =================
 st.markdown("## Materiale")
 materiali = ["Alluminio Freddo", "Alluminio Termico"]
-immagini_materiali = {"Alluminio Freddo": "img/alluminio.png", "Alluminio Termico": "img/alluminio.png"}
+immagini_materiali = {
+    "Alluminio Freddo": "img/alluminio.png",
+    "Alluminio Termico": "img/alluminio.png"
+}
 cols = st.columns(len(materiali))
-
 for col, nome in zip(cols, materiali):
     with col:
         mostra_img(immagini_materiali[nome], 120)
         if st.button(nome):
-            st.session_state.materiale = nome  # Aggiorna la selezione
+            st.session_state.materiale = nome
         if st.session_state.materiale == nome:
             st.markdown("🟦 **SELEZIONATO**")
 
 # ================= VETRO =================
 st.markdown("## Vetro")
 vetri = ["Singolo", "Doppio", "Triplo"]
-immagini_vetri = {"Singolo": "img/vetro_singolo.png", "Doppio": "img/vetro_doppio.png", "Triplo": "img/vetro_triplo.png"}
+immagini_vetri = {
+    "Singolo": "img/vetro_singolo.png",
+    "Doppio": "img/vetro_doppio.png",
+    "Triplo": "img/vetro_triplo.png"
+}
 cols = st.columns(len(vetri))
-
 for col, nome in zip(cols, vetri):
     with col:
         mostra_img(immagini_vetri[nome], 100)
@@ -73,9 +81,11 @@ for col, nome in zip(cols, vetri):
 # ================= ACCESSORI =================
 st.markdown("## Accessori")
 accessori = ["Cremonese", "Maniglia"]
-immagini_accessori = {"Cremonese": "img/cremonese.png", "Maniglia": "img/maniglia.png"}
+immagini_accessori = {
+    "Cremonese": "img/cremonese.png",
+    "Maniglia": "img/maniglia.png"
+}
 cols = st.columns(len(accessori))
-
 for col, nome in zip(cols, accessori):
     with col:
         mostra_img(immagini_accessori[nome], 80)
@@ -114,7 +124,7 @@ if st.button("Calcola Preventivo"):
 
     costo_luce = COSTI_AZIENDA * quantita
 
-    totale_senza_tasse = (costo_alluminio + costo_anta + costo_telaio + costo_accessori + costo_vetro + costo_luce)
+    totale_senza_tasse = costo_alluminio + costo_anta + costo_telaio + costo_accessori + costo_vetro + costo_luce
     guadagno = max(totale_senza_tasse * GUADAGNO_PERC, GUADAGNO_MINIMO)
     totale_con_guadagno = totale_senza_tasse + guadagno
     tasse = totale_con_guadagno * TASSE_PERC
